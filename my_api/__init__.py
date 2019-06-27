@@ -10,6 +10,7 @@ from flask_restful import Resource, Api
 
 # Create an instance of Flask
 app = Flask(__name__)
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 
 # Create the API
 api = Api(app)
