@@ -3,6 +3,8 @@ from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 
+import dateutil.parser
+
 
 def make_request(url, services_dict, session, service, params=None):
     try:
@@ -45,6 +47,9 @@ def chunk_ids(url, services_dict, session, mode, force_update, chunk_size=1000):
 
     return chunks
 
+def fromisoformat(time):
+    return dateutil.parser.parse(time).timestamp()
+
 def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update):
     filename = f"quotes-data-{mode}.txt"
     all_data = {}
@@ -68,6 +73,10 @@ def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update)
             all_data = {**all_data, **data}
         for i in all_data:
             all_data[i].pop("tags", None)
+            all_data[i].pop("platform", None)
+            all_data[i]['date_added'] = fromisoformat(all_data[i]['date_added'])
+            all_data[i]['last_updated'] = fromisoformat(all_data[i]['last_updated'])
+            all_data[i]['quote']['BTC']['last_updated'] = fromisoformat(all_data[i]['quote']['BTC']['last_updated'])
 
     with open(filename, 'w') as f:
         f.write(json.dumps(all_data, indent=2))
