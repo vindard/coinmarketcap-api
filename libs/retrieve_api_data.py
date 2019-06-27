@@ -49,6 +49,7 @@ def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update)
         with open(filename, 'r') as f:
             all_data = f.read()
             all_data = json.loads(all_data)
+            print("Reading from file...")
     except FileNotFoundError:
         all_data = {}
 
@@ -69,7 +70,7 @@ def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update)
 
 def run(mode='sandbox', force_update=False):
     update_state_string = "enabled" if force_update else "disabled"
-    print(f"Running in \"{mode}\" mode with forced data update \"{update_state_string}\".\n")
+    print(f"Running in \"{mode}\" mode with forced data update \"{update_state_string}\".")
 
     creds = {
         "sandbox": {
