@@ -44,14 +44,15 @@ def chunk_ids(url, services_dict, session, mode, force_update, chunk_size=1000):
 
 def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update):
     filename = f"quotes-data-{mode}.txt"
-
-    try:
-        with open(filename, 'r') as f:
-            all_data = f.read()
-            all_data = json.loads(all_data)
-            print("Reading from file...")
-    except FileNotFoundError:
-        all_data = {}
+    all_data = {}
+    if not force_update:
+        try:
+            with open(filename, 'r') as f:
+                all_data = f.read()
+                all_data = json.loads(all_data)
+                print("Reading from file...")
+        except FileNotFoundError:
+            pass
 
     if not all_data or force_update:
         for chunk in chunked_ids:
@@ -62,6 +63,8 @@ def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update)
             }
             data = make_request(url, services_dict, session, '5', params)['data']
             all_data = {**all_data, **data}
+        for i in all_data:
+            all_data[i].pop("tags", None)
 
     with open(filename, 'w') as f:
         f.write(json.dumps(all_data, indent=2))

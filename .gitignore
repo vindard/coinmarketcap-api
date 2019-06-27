@@ -1,3 +1,6 @@
 *data*.txt
 .venv
 __pycache__
+.pyc
+*/*.pyc
+.vscode
