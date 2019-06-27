@@ -2,6 +2,8 @@ import markdown
 import os
 import json
 
+from libs import retrieve_api_data
+
 # Import the framework
 from flask import Flask
 from flask_restful import Resource, Api
@@ -13,10 +15,11 @@ app = Flask(__name__)
 api = Api(app)
 
 def get_db():
-    filename = "quotes-data-pro.txt"
-    with open(filename, 'r') as f:
-        db = json.loads(f.read())
-    return db
+    # filename = "quotes-data-pro.txt"
+    # with open(filename, 'r') as f:
+    #     db = json.loads(f.read())
+    # return db
+    return retrieve_api_data.run()
 
 @app.route("/")
 def index():
@@ -43,4 +46,4 @@ class Coin(Resource):
         return {'message': 'Coin found', 'data': shelf[identifier]}, 200
 
 
-api.add_resource(Coin, '/coinid/<string:identifier>')
+api.add_resource(Coin, '/coin-id/<string:identifier>')
