@@ -9,6 +9,9 @@ def make_request(url, services_dict, session, service, params=None):
         url += services_dict[service]
         response = session.get(url, params=params)
         print(response)
+        if response.status_code == 401:
+            print(f"401 Error: Likely api keys invalid or missing")
+            response.raise_for_status()
     except (ConnectionError, Timeout, TooManyRedirects) as e:
         print(e)
 
