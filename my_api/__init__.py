@@ -40,13 +40,13 @@ def index():
 
 class Coin(Resource):
     def get(self, identifier):
-        shelf = get_db()
+        db = get_db()['data']
 
         # If the key does not exist in the data store, return a 404 error.
-        if not (identifier in shelf):
+        if not (identifier in db):
             return {'message': 'Coin not found', 'data': {}}, 404
 
-        return {'message': 'Coin found', 'data': shelf[identifier]}, 200
+        return {'message': 'Coin found', 'data': db[identifier]}, 200
 
 
 api.add_resource(Coin, '/coin-id/<string:identifier>')
