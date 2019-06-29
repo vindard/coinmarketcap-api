@@ -2,6 +2,7 @@ import argparse
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
+import time
 
 import dateutil.parser
 
@@ -24,9 +25,12 @@ def get_all_ids(url, services_dict, session, mode, force_update):
     try:
         with open(filename, 'r') as f:
             data = f.read()
-            data = json.loads(data)
     except FileNotFoundError:
         data = None
+
+    if data:
+        data = json.loads(data)
+
     if not data or force_update:
         data = make_request(url, services_dict, session, service='1')['data']
         with open(filename, 'w') as f:
@@ -52,15 +56,29 @@ def fromisoformat(time):
 
 def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update):
     filename = f"quotes-data-{mode}.txt"
+    update_interval = 6*(60*60)    # in secs
+    current_time = time.time()
     all_data = {}
     if not force_update:
         try:
             with open(filename, 'r') as f:
-                all_data = f.read()
-                all_data = json.loads(all_data)
-                print("Reading from file...")
+                data = f.read()
         except FileNotFoundError:
+            data = None
             pass
+
+        if data:
+            data = json.loads(data)
+            last_updated = data['data']['1']['quote']['BTC']['last_updated']
+            elapsed_time = current_time - last_updated
+            if elapsed_time > update_interval:
+                print(f"Minimum time {update_interval} secs elapsed ({round(elapsed_time, 0)} secs). Forcing update...")
+                force_update = True
+            else:
+                print("Reading from file...")
+                all_data = data['data']
+                for i in all_data:
+                    all_data[i]['last_updated'] = current_time
 
     if not all_data or force_update:
         for chunk in chunked_ids:
@@ -75,8 +93,13 @@ def get_all_quotes(url, services_dict, session, chunked_ids, mode, force_update)
             all_data[i].pop("tags", None)
             all_data[i].pop("platform", None)
             all_data[i]['date_added'] = fromisoformat(all_data[i]['date_added'])
-            all_data[i]['last_updated'] = fromisoformat(all_data[i]['last_updated'])
+            all_data[i]['last_updated'] = current_time
             all_data[i]['quote']['BTC']['last_updated'] = fromisoformat(all_data[i]['quote']['BTC']['last_updated'])
+
+    all_data = {
+        'last_updated': current_time,
+        'data': all_data
+    }
 
     with open(filename, 'w') as f:
         f.write(json.dumps(all_data, indent=2))
