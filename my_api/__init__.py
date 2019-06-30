@@ -40,8 +40,16 @@ def index():
 
 class Coin(Resource):
     def get(self, identifier):
-        db = get_db()['data']
+        if identifier == "update":
+            try:
+                data = retrieve_api_data.run(force_update=True)
+            except Exception as e:
+                print(e)
+                return {'message': 'Unable to update'}, 500
 
+            return {'message': 'Refreshed data successfully'}, 200
+
+        db = get_db()['data']
         # If the key does not exist in the data store, return a 404 error.
         if not (identifier in db):
             return {'message': 'Coin not found', 'data': {}}, 404
